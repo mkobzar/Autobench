@@ -9,8 +9,9 @@
 if [ $# -lt 2 ] ; then
     echo "Usage          : bench2graph PARAM_1 PARAM_2 [ PARAM_3 ... PARAM_N ]"
     echo "Parameter 1    : autobench results file"
-    echo "Parameter 2    : name of the postscript output file"
-    echo "Parameter 3..N : [optional] columns to display in the graphic"
+    echo "Parameter 2    : name of the output file"
+    echo "Parameter 3    : graph title"
+    echo "Parameter 4..N : [optional] columns to display in the graphic"
     exit 1
 fi
 
@@ -19,9 +20,14 @@ if [ ! -f $1 ] ; then
     exit 2
 fi
 
-if [ -f ${2} ] ; then
-    echo "File ${2} already exist"
-    exit 3
+if [ -z "$2" ] ; then
+    echo "Graph title required"
+    exit 2
+fi
+
+if [ -z "$3" ] ; then
+    echo "Graph title required"
+    exit 2
 fi
 
 input=$1
@@ -33,14 +39,13 @@ if [ `echo $output |cut -c 1` != '/' ] ; then
 fi
 shift
 
+title=$1
+shift
+
 while [ $# -ne 0 ] ; do
     liste="$liste,$1,"
     shift
 done
-
-
-echo -n "Enter the title : "
-read title
 
 if [ ! -d /tmp/graph_script ] ; then
     mkdir /tmp/graph_script
@@ -52,7 +57,6 @@ cd /tmp/graph_script/$$
 
 nblines=`cat results.tsv | wc -l`
 nblines=`expr $nblines - 1`
-
 
 legend=`head -1 results.tsv`
 i=1
@@ -69,7 +73,7 @@ for col in $legend ; do
     i=`expr $i + 1`
 done
 
-echo set terminal postscript color > gnuplot.cmd
+echo set terminal jpeg large size 1024,768 > gnuplot.cmd
 echo set key outside below >> gnuplot.cmd
 echo set key box >> gnuplot.cmd
 echo set grid >> gnuplot.cmd
@@ -88,6 +92,5 @@ done
 echo >> gnuplot.cmd
 
 gnuplot gnuplot.cmd
-
 
 rm -rf /tmp/graph_script/$$

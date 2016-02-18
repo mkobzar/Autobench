@@ -26,7 +26,7 @@ use strict;
 use Getopt::Long;
 
 # The location of the master config file
-my $MASTER_CONFIG = "/etc/autobench.conf";
+my $MASTER_CONFIG = "/usr/local/etc/autobench.conf";
 
 # The location of the autobench config file
 my $CONFIG_FILE = $ENV{HOME}."/.autobench.conf";
@@ -159,17 +159,38 @@ test_host
 	if (/^Connection rate: (\d+\.\d)/) {
 	    $results{conn_rate}=$1;
 	}
+	if (/(\d+) concurrent connections/) {
+	    $results{concurrent_connections}=$1;
+	}
 	if (/^Request rate: (\d+\.\d)/) {
 	    $results{req_rate}=$1;
 	}
-	if (/^Reply rate .*min (\d+\.\d) avg (\d+\.\d) max (\d+\.\d) stddev (\d+\.\d)/) {
+    if (/^Reply rate .*min (\d+\.\d) avg (\d+\.\d) max (\d+\.\d) stddev (\d+\.\d)/)  {
 	    $results{rep_rate_min} = $1;
 	    $results{rep_rate_avg} = $2;
 	    $results{rep_rate_max} = $3;
 	    $results{rep_rate_stdv} = $4;
 	}
+	if (/\((\d+) samples\)/) {
+	    $results{samples}=$1;
+	}
 	if (/^Reply time .* response (\d+\.\d)/) {
 	    $results{rep_time} = $1;
+	}
+	if (/^Reply status: .*1xx=(\d+)/)  {
+		$results{rep_status_1xx} = $1;
+	}
+	if (/^Reply status: .*2xx=(\d+)/)  {
+		$results{rep_status_2xx} = $1;
+	}
+	if (/^Reply status: .*3xx=(\d+)/)  {
+		$results{rep_status_3xx} = $1;
+	}
+	if (/^Reply status: .*4xx=(\d+)/)  {
+		$results{rep_status_4xx} = $1;
+	}
+	if (/^Reply status: .*5xx=(\d+)/)  {
+		$results{rep_status_5xx} = $1;
 	}
 	if (/^Net I\/O: (\d+\.\d)/) {
 	    $results{net_io} = $1;
@@ -177,17 +198,23 @@ test_host
 	if (/^Errors: total (\d+)/) {
 	    $results{errors} = $1;
 	}
+	
+	if (/^Total: connections .* test-duration (\d+\.\d)/) {
+	   $results{test_duration} = $1;
+	}
+	
 	print $_ unless $$config_ref{quiet};
     }
     close (IN);
-    
-    if ($results{replies} == 0) {
-	print STDERR "Zero replies received, test invalid: rate $rate\n";
-	$results{percent_errors} = 101;
-    }
-    else {
-	$results{percent_errors} = ( 100 * $results{errors} / $results{replies} );
-    }
+## we would show "total error count", "percent errors", or "errors to replies ratio"
+## commented code below was calculating "percent errors". 
+## currently in reports we'll see "total error count"    
+#   if ($results{errors} == 0) {
+#	$results{percent_errors} = 0;
+#    }
+#    else {
+#	$results{percent_errors} = sprintf "%.1f", ( $results{errors} / ( $results{errors} + $results{replies} ) * 100 );
+#   }
     return \%results;
 }
 
@@ -201,13 +228,22 @@ print_header
     print $out_stream "dem_req_rate".$sep.
         "req_rate_$config{host1}".$sep.
         "con_rate_$config{host1}".$sep.
+        "concurrent_connections_$config{host1}".$sep.
         "min_rep_rate_$config{host1}".$sep.
         "avg_rep_rate_$config{host1}".$sep.
         "max_rep_rate_$config{host1}".$sep.
         "stddev_rep_rate_$config{host1}".$sep.
+        "samples_$config{host1}".$sep.
         "resp_time_$config{host1}".$sep.
+        "1xx_$config{host1}".$sep.
+        "2xx_$config{host1}".$sep.
+        "3xx_$config{host1}".$sep.
+        "4xx_$config{host1}".$sep.
+        "5xx_$config{host1}".$sep.
         "net_io_$config{host1}".$sep.
-        "errors_$config{host1}";
+        "client_errors_$config{host1}".$sep.
+		"test_duration_$config{host1}".$sep.
+        "timeStamp";
 
     if ($config{single_host}) {
         print $out_stream "\n";
@@ -215,13 +251,21 @@ print_header
     else {
         print $out_stream $sep."req_rate_$config{host2}".$sep.
             "con_rate_$config{host2}".$sep.
-            "min_rep_rate_$config{host2}".$sep.
+			"concurrent_connections_$config{host2}".$sep.
+			"min_rep_rate_$config{host2}".$sep.
             "avg_rep_rate_$config{host2}".$sep.
             "max_rep_rate_$config{host2}".$sep.
             "stddev_rep_rate_$config{host2}".$sep.
+	        "samples_$config{host2}".$sep.
             "resp_time_$config{host2}".$sep.
-            "net_io_$config{host2}".$sep.
-            "errors_$config{host2}\n";
+			"1xx_$config{host2}".$sep.
+			"2xx_$config{host2}".$sep.
+			"3xx_$config{host2}".$sep.
+			"4xx_$config{host2}".$sep.
+			"5xx_$config{host2}".$sep.
+			"net_io_$config{host2}".$sep.
+            "client_errors_$config{host2}\n".$sep.
+			"test_duration_$config{host2}";
     }
 }
 
@@ -239,7 +283,7 @@ my %config = get_config($CONFIG_FILE);
 GetOptions( \%config, "host1:s","host2:s","uri1:s","uri2:s","port1:i",
             "port2:i","low_rate:i","high_rate:i","rate_step:i","num_conn:i",
             "num_call:i","timeout:i","quiet","single_host","debug",
-	    "output_fmt=s","file=s","version", "const_test_time:i");
+	    "output_fmt=s","file=s","version", "const_test_time:i", "httperf_ssl:s");
 
 if ($config{version}) {
     print "Autobench $VERSION\nCopyright (C) Julian T. J. Midgley <jtjm\@xenoclast.org> 2003\n";
@@ -308,26 +352,43 @@ for ($curr_rate = $config{low_rate}; $curr_rate <= $config{high_rate};
     print OUT $dem_req.$sep.
 	  $res_host1{req_rate}.$sep.
 	  $res_host1{conn_rate}.$sep.
+	  $res_host1{concurrent_connections}.$sep.
 	  $res_host1{rep_rate_min}.$sep.
 	  $res_host1{rep_rate_avg}.$sep.
 	  $res_host1{rep_rate_max}.$sep.
 	  $res_host1{rep_rate_stdv}.$sep.
-          $res_host1{rep_time}.$sep.
+	  $res_host1{samples}.$sep.
+      $res_host1{rep_time}.$sep.
+      $res_host1{rep_status_1xx}.$sep.
+      $res_host1{rep_status_2xx}.$sep.
+      $res_host1{rep_status_3xx}.$sep.
+      $res_host1{rep_status_4xx}.$sep.
+      $res_host1{rep_status_5xx}.$sep.
 	  $res_host1{net_io}.$sep.
-          $res_host1{percent_errors};
+      $res_host1{errors}.$sep.
+      $res_host1{test_duration}.$sep.
+      time();
     if ($config{single_host}) {
 	print OUT "\n";
     }
     else {
 	print OUT $sep.$res_host2{req_rate}.$sep.
 	  $res_host2{conn_rate}.$sep.
+	  $res_host2{concurrent_connections}.$sep.
 	  $res_host2{rep_rate_min}.$sep.
 	  $res_host2{rep_rate_avg}.$sep.
 	  $res_host2{rep_rate_max}.$sep.
 	  $res_host2{rep_rate_stdv}.$sep.
-	  $res_host2{rep_time}.$sep.
-	  $res_host2{net_io}.$sep.
-	  $res_host2{percent_errors}."\n";	   
+	  $res_host2{samples}.$sep.
+      $res_host2{rep_time}.$sep.
+	  $res_host2{rep_status_1xx}.$sep.
+      $res_host2{rep_status_2xx}.$sep.
+      $res_host2{rep_status_3xx}.$sep.
+      $res_host2{rep_status_4xx}.$sep.
+      $res_host2{rep_status_5xx}.$sep.
+ 	  $res_host2{net_io}.$sep.
+	  $res_host2{errors}.$sep.
+      $res_host2{test_duration}."\n";	   
     }
 
 }
