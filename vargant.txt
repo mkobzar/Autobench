@@ -1,0 +1,37 @@
+#pushd C:\Program Files\Git\usr\bin
+pushd %LOCALAPPDATA%\Programs\Git\usr\bin
+path=%path%;%cd%
+popd
+
+vagrant init hashicorp/precise64
+vagrant up
+vagrant ssh
+
+#Sharing Files Between Your Guest and Host Machines
+#Locate and remove: # config.vm.synced_folder "../data", "/vagrant_data"
+#In its place, add: 
+config.vm.synced_folder "../../../data", "/home/vagrant/data/"
+#Create a new directory using the name identified in the file Vagrantfile.
+#$ mkdir \root
+#Reload the vagrant instance (and restart the server). The contents of /var/www will appear in docroot.
+#$ vagrant reload
+
+ 
+##shell get time epoch value
+#date +%s
+#1455551517
+`date +"%s"`
+
+##shell get epoch time from value
+#date -d @1455551517
+#Mon Feb 15 15:51:57 UTC 2016
+
+##shell get time value
+date
+
+
+# perl get epoch value
+#!/bin/perl
+print . time() . "\n";
+ 
+ 
