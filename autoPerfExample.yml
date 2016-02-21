@@ -9,9 +9,9 @@
 # or double. I use single in my examples below.
 
 # display type
-display_format: console
+#display_format: console
 #display_format: json
-#display_format: csv
+display_format: csv
 
 # configuration for display columns
 #
@@ -21,62 +21,62 @@ display_format: console
 # #
 display_columns:
   - :rate
- # - :max_connect_burst_length
- # - :total_connections
- # - :total_requests
- # - :total_replies
- # - :total_test_duration
- # - :connection_rate_per_sec
- # - :connection_rate_ms_conn
- # - :connection_time_min
- # - :connection_time_avg
- # - :connection_time_max
- # - :connection_time_median
- # - :connection_time_stddev
- # - :connection_time_connect
- # - :connection_length
+  - :max_connect_burst_length
+  - :total_connections
+  - :total_requests
+  - :total_replies
+  - :total_test_duration
+  - :connection_rate_per_sec
+  - :connection_rate_ms_conn
+  - :connection_time_min
+  - :connection_time_avg
+  - :connection_time_max
+  - :connection_time_median
+  - :connection_time_stddev
+  - :connection_time_connect
+  - :connection_length
   - :request_rate_per_sec
- # - :request_rate_ms_request
- # - :request_size
- # - :reply_rate_min
+  - :request_rate_ms_request
+  - :request_size
+  - :reply_rate_min
   - :reply_rate_avg
- # - :reply_rate_max
- # - :reply_rate_stddev
- # - :reply_rate_samples
- # - :reply_time_response
- # - :reply_time_transfer
- # - :reply_size_header
- # - :reply_size_content
- # - :reply_size_footer
- # - :reply_size_total
- # - :reply_status_1xx
+  - :reply_rate_max
+  - :reply_rate_stddev
+  - :reply_rate_samples
+  - :reply_time_response
+  - :reply_time_transfer
+  - :reply_size_header
+  - :reply_size_content
+  - :reply_size_footer
+  - :reply_size_total
+  - :reply_status_1xx
   - :reply_status_2xx
- # - :reply_status_3xx
- # - :reply_status_4xx
+  - :reply_status_3xx
+  - :reply_status_4xx
   - :reply_status_5xx
  # - :cpu_time_user_sec
  # - :cpu_time_system_sec
  # - :cpu_time_user_pct
  # - :cpu_time_system_pct
  # - :cpu_time_total_pct
- # - :net_io_kb_sec
- # - :net_io_bps
+  - :net_io_kb_sec
+  - :net_io_bps
   - :errors_total
- # - :errors_client_timeout
- # - :errors_socket_timeout
- # - :errors_conn_refused
- # - :errors_conn_reset
- # - :errors_fd_unavail
- # - :errors_addr_unavail
- # - :errors_ftab_full
- # - :errors_other
- # - :command
+  - :errors_client_timeout
+  - :errors_socket_timeout
+  - :errors_conn_refused
+  - :errors_conn_reset
+  - :errors_fd_unavail
+  - :errors_addr_unavail
+  - :errors_ftab_full
+  - :errors_other
+  - :command
 
 #
 # for "console" and "csv", defines columns
 # for "json", defines which results to include
 #
-timeout: 5
+# timeout: 10
 ## tee
 #
 # This is an httperf specific option which will force httperf to
@@ -90,21 +90,21 @@ server: "www.example.com"
 
 # The URI relative to the host root
 # - use this without 'wlog'
-# uri: "/cpanel"
+# uri: "/"
 
 # The host port
 port: 443
 
 # Starting connection rate per second, 100
-low_rate: 10
+low_rate: 100
 
 # Highest connection rate per second 500
-high_rate: 200
+high_rate: 400
 
 # Connection rate per second steps
 # For the example config:
 # [ 100, 150, 200, 250, 300, 350, 400, 450, 500 ]
-rate_step: 10
+rate_step: 50
 
 # Run httperf verbose
 verbose: false
@@ -113,10 +113,10 @@ verbose: false
 # wlog: 'n,replay_log'
 
 # Total number of connections 50
-num-conns: 1
+num-conns: 300
 
 # See httperf docs 100
-num-calls: 10
+num-calls: 20
 
 
 # See httperf docs
@@ -138,13 +138,13 @@ timeout: 15
 # close-with-reset
 # debug
 # failure-status
-# hog
+# hog: true
 # http-version
 # max-connections
 # max-piped-calls
 # method
 # no-host-hdr
-# period
+# period~
 # port
 # print-reply
 # print-request
@@ -153,12 +153,13 @@ timeout: 15
 # send-buffer
 # server-name
 # session-cookies
-# ssl
+ssl: true
+# httperf_ssl: NULL
 # ssl-ciphers
 # ssl-no-reuse
 # think-timeout
 # wsess
 # wsesslog
 # wset
-ssl-protocol: auto
+# ssl-protocol: "auto"
 # vim: filetype=yaml:
