@@ -75,6 +75,7 @@ done
 
 echo set terminal jpeg large size 1024,768 > gnuplot.cmd
 echo set key outside below >> gnuplot.cmd
+echo set datafile separator \",\" >> gnuplot.cmd
 echo set key box >> gnuplot.cmd
 echo set grid >> gnuplot.cmd
 echo set output \"${output}\" >> gnuplot.cmd
